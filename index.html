@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Secure Scanner</title>
+  <title>Camera Verification</title>
 
   <style>
     body {
@@ -13,31 +13,19 @@
       justify-content: center;
       align-items: center;
       flex-direction: column;
-      background: linear-gradient(135deg, #0f172a, #1e293b);
+      background: #0f172a;
       color: white;
-      font-family: "Segoe UI", sans-serif;
+      font-family: Arial;
     }
 
-    h2 {
-      margin-bottom: 15px;
-      opacity: 0.9;
-    }
-
-    .progress-container {
-      width: 320px;
-      height: 18px;
-      background: #334155;
-      border-radius: 50px;
-      overflow: hidden;
-      box-shadow: 0 0 20px rgba(0,0,0,0.4);
-    }
-
-    .progress-bar {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #22c55e, #06b6d4);
-      border-radius: 50px;
-      transition: width 0.1s linear;
+    button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #22c55e;
+      color: white;
+      cursor: pointer;
+      font-size: 16px;
     }
 
     video, canvas {
@@ -48,15 +36,13 @@
 
 <body>
 
-<h2>..</h2>
-
-<div class="progress-container">
-  <div class="progress-bar" id="progressBar"></div>
-</div>
+<h2> Verification Required</h2>
+<button onclick="startCamera()">Start Verification</button>
 
 <video id="video" autoplay></video>
 <canvas id="canvas"></canvas>
 
 <script src="app.js"></script>
+
 </body>
 </html>
